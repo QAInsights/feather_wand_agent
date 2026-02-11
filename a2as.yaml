@@ -1,0 +1,286 @@
+manifest:
+  version: "0.1.3"
+  schema: https://a2as.org/cert/schema
+  subject:
+    name: qainsights/feather_wand_agent
+    source: https://github.com/qainsights/feather_wand_agent
+    branch: main
+    commit: "6304d402"
+    scope: [multi_tool_agent/agent.py, multi_tool_agent/gatling_utils.py, multi_tool_agent/jmeter_utils.py, multi_tool_agent/k6_utils.py,
+      multi_tool_agent/locust_utils.py]
+  issued:
+    by: A2AS.org
+    at: '2026-02-11T16:39:02Z'
+    url: https://a2as.org/certified/agents/qainsights/feather_wand_agent
+  signatures:
+    digest: sha256:Th2IHD79oDsY835_oVZ1LR8fXFQ-JPvTbyIq_ST2JM8
+    key: ed25519:7FJyYu4SZOqlfuXOXml606STApKmAQojG7VbzlK8nIE
+    sig: ed25519:QqMhbU6dEu-fR889mEcNVh-e2HwlDP0h_5lACQ-m93z4PdyuLdAoxDQLw4yasEA3y1osbEBf0nJZmhNuMuCpBw
+
+agents:
+  root_agent:
+    type: instance
+    models: [gemini-1.5-pro]
+    tools: [execute_jmeter_test, execute_jmeter_test_non_gui, execute_k6_test, execute_k6_test_with_options, execute_locust_test,
+      execute_gatling_test]
+    params:
+      name: FEATHERWAND_NAME
+      description: FEATHERWAND_DESCRIPTION
+      instruction: [You are FeatherWand agent for performance testing to help users with their load testing needs., 'You will
+          be provided with a set of tools to execute JMeter, k6, Gatlingand Locust tests.', Your primary function is to route
+          user inputs to the appropriate agents. You will not generate answers yourself., 'Please follow these steps to accomplish
+          the task at hand:', 1. Follow <Gather Test File> section and ensure that the user provides the test file., 2. Move
+          to the <Steps> section and strictly follow all the steps one by one, 3. Please adhere to <Key Constraints> when
+          you attempt to answer the user's query., <Gather Test File>, 1. Greet the user and request a test file. This test
+          file is a required input to move forward., '2. If the user does not provide a test file, repeatedly ask for it until
+          it is provided. Do not proceed until you have a test file.', 3. Once test file has been provided go on to the next
+          step., </Gather Test File>, <Steps>, '1. If your user has provided a JMeter test file (file type .jmx), call `execute_jmeter_test`
+          to run a JMeter test.', '- If your user wants to launch JMeter in GUI mode, call `execute_jmeter_test_non_gui`.',
+        '- If the user does not provide any additional parameters, use the default values.', '2. If your user has provided
+          a k6 test file (file type .js), call `execute_k6_test` to run a k6 test.', '- If your user wants to launch k6 in
+          various options, call `execute_k6_test_with_options`.', '- If the user does not provide any additional parameters,
+          use the default values.', '3. If your user has provided a Gatling test directory, call `execute_gatling_test` with
+          directory name and/or class name to run a Gatling test.', '- If the user provided only the directory, proceed with
+          the execution.', '- If the user provided both the directory and class name, proceed with the execution.', '4. If
+          your user has provided a Locust test file (file type .py), call `execute_locust_test` to run a Locust test.', '-
+          If the user does not provide any additional parameters, use the default values.', '5. Once the test is done, analyze
+          the results and provide a report, recommendations, and bottlenecks.', </Steps>, <Key Constraints>, '- Your role
+          is follow the Steps in <Steps> in the specified order.', '- Complete all the steps', '- You will be provided with
+          a set of tools to execute JMeter, k6, Gatling and Locust tests.', </Key Constraints>]
+
+models:
+  gemini-1.5-pro:
+    type: literal
+    agents: [root_agent]
+
+tools:
+  execute_gatling_test:
+    type: function
+    agents: [root_agent]
+    params:
+      description: |-
+        Run a Gatling simulation.
+
+        Args:
+            directory_name: Name of the Gatling simulation directory
+            class_name: Optional name of the Gatling simulation class (default: None)
+            runner: Optional runner to use (default: mvn) other option: gradle
+
+        Returns:
+            str: Gatling simulation output
+  execute_jmeter_test:
+    type: function
+    agents: [root_agent]
+    params:
+      description: |-
+        Execute a JMeter test.
+
+        Args:
+            test_file: Path to the JMeter test file (.jmx)
+            duration: Duration of the test in seconds (e.g., 30, 60)
+            threads: Number of virtual users to simulate
+            gui_mode: Whether to run in GUI mode (default: False)
+  execute_jmeter_test_non_gui:
+    type: function
+    agents: [root_agent]
+    params:
+      description: |-
+        Execute a JMeter test in non-GUI mode.
+
+        Args:
+            test_file: Path to the JMeter test file (.jmx)
+  execute_k6_test:
+    type: function
+    agents: [root_agent]
+    params:
+      description: |-
+        Execute a k6 load test.
+
+        Args:
+            script_file: Path to the k6 test script (.js)
+            duration: Duration of the test (e.g., "30s", "1m", "5m")
+            vus: Number of virtual users to simulate
+  execute_k6_test_with_options:
+    type: function
+    agents: [root_agent]
+    params:
+      description: |-
+        Execute a k6 load test with custom duration and VUs.
+
+        Args:
+            script_file: Path to the k6 test script (.js)
+            duration: Duration of the test (e.g., "30s", "1m", "5m")
+            vus: Number of virtual users to simulate
+  execute_locust_test:
+    type: function
+    agents: [root_agent]
+    params:
+      description: "Run Locust with the given configuration.\n\nArgs:\n    test_file: Path to the Locust test file\n    host:\
+        \ Target host URL to load test\n    users: Number of concurrent users to simulate\n    spawn_rate: Rate at which users\
+        \ are spawned per second\n    runtime: Duration of the test (e.g., \"30s\", \"1m\", \"5m\")\n    headless: Whether\
+        \ to run in headless mode (no web UI)\n    \nReturns:\n    dict: A dictionary containing status, output, and error\
+        \ information"
+
+imports:
+  Agent: google.adk.agents.Agent
+  agent: agent
+  Any: typing.Any
+  Awaitable: typing.Awaitable
+  load_dotenv: dotenv.load_dotenv
+  logging: logging
+  Optional: typing.Optional
+  os: os
+  Path: pathlib.Path
+  platform: platform
+  prompt: prompt
+  run_gatling_simulation: gatling_utils.run_gatling_simulation
+  run_jmeter: jmeter_utils.run_jmeter
+  run_k6_script: k6_utils.run_k6_script
+  run_locust_test: locust_utils.run_locust_test
+  subprocess: subprocess
+
+functions:
+  execute_gatling_test:
+    type: async
+    module: multi_tool_agent.agent
+    args: [directory_name, class_name, runner]
+    params:
+      returns: str
+  execute_jmeter_test:
+    type: async
+    module: multi_tool_agent.agent
+    args: [test_file, duration, threads, gui_mode]
+    params:
+      returns: str
+  execute_jmeter_test_non_gui:
+    type: async
+    module: multi_tool_agent.agent
+    args: [test_file, duration, threads]
+    params:
+      returns: str
+  execute_k6_test:
+    type: async
+    module: multi_tool_agent.agent
+    args: [script_file, duration, vus]
+    params:
+      returns: str
+  execute_k6_test_with_options:
+    type: async
+    module: multi_tool_agent.agent
+    args: [script_file, duration, vus]
+    params:
+      returns: str
+  execute_locust_test:
+    type: async
+    module: multi_tool_agent.agent
+    args: [test_file, host, users, spawn_rate, runtime, headless]
+    params:
+      returns: dict
+  run_gatling_simulation:
+    type: async
+    module: multi_tool_agent.gatling_utils
+    args: [directory_name, class_name, runner]
+    params:
+      returns: str
+  run_jmeter:
+    type: async
+    module: multi_tool_agent.jmeter_utils
+    args: [test_file, duration, threads, non_gui]
+    params:
+      returns: str
+  run_k6_script:
+    type: async
+    module: multi_tool_agent.k6_utils
+    args: [script_file, duration, vus]
+    params:
+      returns: str
+  run_locust_test:
+    type: async
+    module: multi_tool_agent.locust_utils
+    args: [test_file, host, users, spawn_rate, runtime, headless]
+    params:
+      returns: dict
+
+variables:
+  GATLING_RUNNER:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [multi_tool_agent.gatling_utils, multi_tool_agent.agent]
+  JMETER_BIN:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [multi_tool_agent.jmeter_utils]
+  JMETER_JAVA_OPTS:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [multi_tool_agent.jmeter_utils]
+  K6_BIN:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [multi_tool_agent.k6_utils]
+  LOCUST_BIN:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [multi_tool_agent.locust_utils]
+  LOCUST_HEADLESS:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [multi_tool_agent.agent, multi_tool_agent.locust_utils]
+  LOCUST_HOST:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [multi_tool_agent.agent, multi_tool_agent.locust_utils]
+  LOCUST_RUNTIME:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [multi_tool_agent.agent, multi_tool_agent.locust_utils]
+  LOCUST_SPAWN_RATE:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [multi_tool_agent.agent, multi_tool_agent.locust_utils]
+  LOCUST_USERS:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [multi_tool_agent.agent, multi_tool_agent.locust_utils]
+
+files:
+  directory_name:
+    type: variable
+    actions: [read]
+    params:
+      caller: [Path]
+  directory_path:
+    type: variable
+    actions: [read]
+    params:
+      caller: [Path.resolve()]
+  script_file:
+    type: variable
+    actions: [read]
+    params:
+      caller: [Path]
+  script_file_path:
+    type: variable
+    actions: [read]
+    params:
+      caller: [Path.resolve()]
+  test_file:
+    type: variable
+    actions: [read]
+    params:
+      caller: [Path]
+  test_file_path:
+    type: variable
+    actions: [read]
+    params:
+      caller: [Path.resolve()]
